@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Halaman Unduh Foto</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>🔐 Halaman Unduh Foto</h2>
+
+    <div id="loginSection">
+      <p>Masukkan sandi untuk membuka halaman unduh:</p>
+      <input type="password" id="passwordInput" placeholder="Masukkan sandi..." />
+      <button onclick="checkPassword()">Masuk</button>
+    </div>
+
+    <div id="downloadSection" style="display:none;">
+      <h3>Daftar Foto untuk Diunduh</h3>
+      <div id="photoList"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module">
+    const supabaseUrl = "https://grzqfhiwrytumirzbrql.supabase.co";
+    const supabaseKey =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // anon key kamu
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    const passwordBenar = "azuradera12";
+
+    async function checkPassword() {
+      const input = document.getElementById("passwordInput").value;
+      if (input === passwordBenar) {
+        alert("✅ Sandi benar! Menampilkan daftar foto...");
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("downloadSection").style.display = "block";
+        loadPhotos();
+      } else {
+        alert("❌ Sandi salah! Coba lagi.");
+      }
+    }
+
+    async function loadPhotos() {
+      const { data, error } = await supabase.storage
+        .from("photos")
+        .list("", { limit: 100 });
+
+      if (error) {
+        console.error("Gagal ambil daftar foto:", error.message);
+        return;
+      }
+
+      const photoList = document.getElementById("photoList");
+      photoList.innerHTML = "";
+
+      data.forEach((item) => {
+        const link = document.createElement("a");
+        link.href = `${supabaseUrl}/storage/v1/object/public/photos/${item.name}`;
+        link.textContent = `⬇️ Unduh ${item.name}`;
+        link.target = "_blank";
+        photoList.appendChild(link);
+        photoList.appendChild(document.createElement("br"));
+      });
+    }
+  </script>
+</body>
+</html>
